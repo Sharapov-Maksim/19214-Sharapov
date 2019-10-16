@@ -36,8 +36,11 @@ length' [] = 0
 length' (x:xs) =1 + length' xs
 
 
-append :: [a] -> a -> [a]
-append xs x = reverse'(x:(reverse' xs))
+append' :: [a] -> a -> [a]
+append' [] x = [x]
+append' (y:xs) x = y : append' xs x
+--append' (y:xs) x = if length' xs == 0 then y:x:xs else y : append' xs x
+--append' xs x = reverse'(x:(reverse' xs)) 
 
 
 concat' :: [a] -> [a] -> [a]
