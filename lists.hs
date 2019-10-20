@@ -25,28 +25,32 @@ init' [] = error "empty list"
 init' [x] = []
 init' (x:xs) = x:init' xs
 
--- не оптимально (можно за N)
-reverse':: [a] -> [a]
-reverse' [] = []
-reverse' xs = last' xs : reverse'(init' xs)
 
---хвостовую
+reverse':: [a] -> [a]
+reverse' ys = rev [] ys
+    where
+        rev acc [] = acc
+        rev acc (x:xs) = rev (x:acc) xs
+
+
 length':: [a] -> Integer
-length' [] = 0
-length' (x:xs) =1 + length' xs
+length' ys = len 0 ys
+    where
+        len acc [] = acc
+        len acc (x:xs) = len (acc+1) xs
+
 
 
 append' :: [a] -> a -> [a]
 append' [] x = [x]
 append' (y:xs) x = y : append' xs x
 
---append' (y:xs) x = if length' xs == 0 then y:x:xs else y : append' xs x
---append' xs x = reverse'(x:(reverse' xs)) 
 
---можно сделать быстрее (за длину первого списка)
 concat' :: [a] -> [a] -> [a]
-concat' xs [] = xs
-concat' xs (y:ys) = concat' (append' xs y) ys 
+concat' [] ys = ys
+concat' (x:xs) ys = x : concat' xs ys
+
+
 
 
 drop' :: Integer -> [a] -> [a]
@@ -63,9 +67,6 @@ take' n (x:xs) = x : take' (n-1) xs
 
 splitAt' :: Integer -> [a] -> ([a],[a])
 splitAt' n xs = (take' n xs, drop' n xs)
---splitAt' _ [] = error "empty list"
---splitAt' n xs = if n > length' xs then error "not enogh elements" 
---else (take' n xs, drop' n xs)
 
 
 null' :: [a] -> Bool
