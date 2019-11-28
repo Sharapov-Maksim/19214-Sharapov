@@ -43,27 +43,27 @@ type Qubit a = [QuantumState a]
 
 toList::Qubit (Complex a) -> [Complex a]
 toList [(ToQuantumState comp _)] = [comp]
-toList ((ToQuantumState comp _):xs) = [comp] ++ toList xs 
+toList ((ToQuantumState comp _):xs) = comp : toList xs 
 
 
 toLabelList::Qubit (Complex a) -> [String]
 toLabelList [(ToQuantumState _ str)] = [str]
-toLabelList ((ToQuantumState _ str):xs) = [str] ++ toLabelList xs 
+toLabelList ((ToQuantumState _ str):xs) = str : toLabelList xs 
 
 
 fromList:: [Complex a]->[String]->Qubit (Complex a)
 fromList [comp] [str] = [(ToQuantumState comp str)]
-fromList (comp:xs) (str:ys) = [(ToQuantumState comp str)] ++ fromList xs ys
+fromList (comp:xs) (str:ys) = (ToQuantumState comp str) : fromList xs ys
 
 
 toPairList:: Qubit (Complex a)->[(Complex a,String)]
 toPairList [(ToQuantumState comp str)] = [(comp, str)]
-toPairList ((ToQuantumState comp str):xs) = [(comp, str)] ++ toPairList xs 
+toPairList ((ToQuantumState comp str):xs) = (comp, str) : toPairList xs 
 
 
 fromPairList:: [(Complex a,String)] -> Qubit (Complex a)
 fromPairList [(comp,str)] = [ToQuantumState comp str] 
-fromPairList ((comp,str):xs) = [ToQuantumState comp str] ++ fromPairList xs 
+fromPairList ((comp,str):xs) = ToQuantumState comp str : fromPairList xs 
 
 -- I don`t realy shure how to calculate it
 scalarProduct:: (Num a) => Qubit a ->Qubit a ->a
@@ -74,3 +74,5 @@ scalarProduct ((ToQuantumState comp1 _):qub1) ((ToQuantumState comp2 _):qub2) = 
 entagle::(Num a) => Qubit a ->Qubit a ->Qubit a
 entagle [(ToQuantumState comp1 str1)] [(ToQuantumState comp2 str2)] = [ToQuantumState ((*) comp1 comp2) (str1 ++ str2)]
 entagle ((ToQuantumState comp1 str1):qub1) ((ToQuantumState comp2 str2):qub2) = [ToQuantumState ((*) comp1 comp2) (str1 ++ str2)] ++ entagle qub1 qub2
+
+
