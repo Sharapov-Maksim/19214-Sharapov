@@ -4,24 +4,23 @@ instance (Eq a, Ord a, Show a, Num a) => Show (Complex a) where
     show (ToComplex re 0) = show re
     show (ToComplex 0 im) | im == 1  = "i"
                           | im == -1 = "-i"
-                          | im < 0   = show im ++ "i" 
-                          | im > 0   = show im ++ "i"
+                          | otherwise = show im ++ "i"
     show (ToComplex re im) | im == 1  = show re ++ "+i"
                            | im == -1 = show re ++ "-i"
                            | im < 0   = show re ++ show im ++ "i"
-                           | im > 0   = show re ++ "+" ++ show im ++ "i"
+                           | im >= 0  = show re ++ "+" ++ show im ++ "i"
 
 instance (Eq a, Ord a, Show a, Num a) => Eq (Complex a) where
-    (==) (ToComplex re1 im1) (ToComplex re2 im2) = if (re1 == re2) && (im1 == im2) then True else False
+    (==) (ToComplex re1 im1) (ToComplex re2 im2) = (re1 == re2) && (im1 == im2)
 
 instance (Eq a, Ord a, Show a, Num a) => Ord (Complex a) where
     compare (ToComplex re1 im1) (ToComplex re2 im2) = error "Can't to compare complex number"
 
-instance (Eq a, Ord a, Show a, Num a) => Num (Complex a) where
+instance (Eq a, Ord a, Show a, Num a, Floating a) => Num (Complex a) where
     (+) (ToComplex re1 im1) (ToComplex re2 im2) = ToComplex (re1+re2) (im1+im2)
     (-) (ToComplex re1 im1) (ToComplex re2 im2) = ToComplex (re1-re2) (im1-im2)
     (*) (ToComplex re1 im1) (ToComplex re2 im2) = ToComplex (re1*re2 - im1*im2) (im1*re2 + re1*im2)
-    abs (ToComplex re im) = ToComplex (abs re) (abs im)
+    abs (ToComplex re im) = ToComplex (sqrt(re^2 + im^2)) 0
     signum (ToComplex re _) = ToComplex (signum re) 0
     fromInteger x = ToComplex 0 0
     negate (ToComplex re im) = ToComplex re (-im)
@@ -34,45 +33,42 @@ instance (Eq a, Ord a, Show a, Num a) => Show (QuantumState a) where
     show (ToQuantumState c str) = show c ++ " with state: " ++ str
 
 instance (Eq a, Ord a, Show a, Num a) => Eq (QuantumState a) where
-    (==) (ToQuantumState c1 str1) (ToQuantumState c2 str2) = if c1 == c2 then True else False
+    (==) (ToQuantumState c1 str1) (ToQuantumState c2 str2) = c1 == c2
 
 instance Functor QuantumState where
     fmap f (ToQuantumState c str) = ToQuantumState (f c) str
 
 type Qubit a = [QuantumState a]
 
+--map - fixed
 toList::Qubit (Complex a) -> [Complex a]
-toList [(ToQuantumState comp _)] = [comp]
-toList ((ToQuantumState comp _):xs) = comp : toList xs 
+toList qubit = fmap (\(ToQuantumState comp _) -> comp) qubit
 
 
+--map - fixed
 toLabelList::Qubit (Complex a) -> [String]
-toLabelList [(ToQuantumState _ str)] = [str]
-toLabelList ((ToQuantumState _ str):xs) = str : toLabelList xs 
+toLabelList qubit = fmap (\(ToQuantumState _ str) -> str) qubit
 
 
 fromList:: [Complex a]->[String]->Qubit (Complex a)
 fromList [comp] [str] = [(ToQuantumState comp str)]
 fromList (comp:xs) (str:ys) = (ToQuantumState comp str) : fromList xs ys
 
-
+--map - fixed
 toPairList:: Qubit (Complex a)->[(Complex a,String)]
-toPairList [(ToQuantumState comp str)] = [(comp, str)]
-toPairList ((ToQuantumState comp str):xs) = (comp, str) : toPairList xs 
+toPairList qubit = fmap (\(ToQuantumState comp str) -> (comp, str)) qubit
 
 
 fromPairList:: [(Complex a,String)] -> Qubit (Complex a)
-fromPairList [(comp,str)] = [ToQuantumState comp str] 
-fromPairList ((comp,str):xs) = ToQuantumState comp str : fromPairList xs 
+fromPairList pares = fmap (\(x, y) -> ToQuantumState x y) pares
 
--- I don`t realy shure how to calculate it
-scalarProduct:: (Num a) => Qubit a ->Qubit a ->a
+
+scalarProduct:: (Num a) => Qubit (Complex a) ->Qubit (Complex a) ->a
 scalarProduct [] [] = 0
-scalarProduct ((ToQuantumState comp1 _):qub1) ((ToQuantumState comp2 _):qub2) = (*) comp1 (negate(comp2)) + scalarProduct qub1 qub2
+scalarProduct ((ToQuantumState (ToComplex x1 y1) _):qub1) ((ToQuantumState (ToComplex x2 y2) _):qub2) = x1*x2 + y1*y2 + scalarProduct qub1 qub2
 
 
+--[generator] - fixed
 entagle::(Num a) => Qubit a ->Qubit a ->Qubit a
-entagle [(ToQuantumState comp1 str1)] [(ToQuantumState comp2 str2)] = [ToQuantumState ((*) comp1 comp2) (str1 ++ str2)]
-entagle ((ToQuantumState comp1 str1):qub1) ((ToQuantumState comp2 str2):qub2) = [ToQuantumState ((*) comp1 comp2) (str1 ++ str2)] ++ entagle qub1 qub2
-
+entagle qub1 qub2 = [ToQuantumState (comp1 * comp2) (str1 ++ str2) | (ToQuantumState comp1 str1) <- qub1, (ToQuantumState comp2 str2) <- qub2] 
 
