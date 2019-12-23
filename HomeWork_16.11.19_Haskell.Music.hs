@@ -22,6 +22,11 @@ addAlbum (User myName mySongs myAlbums myGroups) newAlbum = User myName mySongs 
 addGroup :: User -> Group -> User
 addGroup (User myName mySongs myAlbums myGroups) newGroup = User myName mySongs myAlbums (myGroups++[newGroup])
 
+
+findSong :: Album -> [Song] -> [Song]
+findSong myGroup songs = filter (\(Song name group _) -> group == myGroup) songs
+
+
 -- Examples
 x :: User
 x = User "lol" [Song "The Scientist" "Coldplay" "The Scientist", Song "Deutchland" "Rammstein" "Deutchland"] ["vvv","Deutchland"] ["Coldplay", "Rammstein"]
