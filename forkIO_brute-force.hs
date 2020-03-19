@@ -18,27 +18,26 @@ bruteForce x (word:ws)  | encode(SHA1.hash (BSC.pack word)) == x = word
 
 
 takeTask :: MVar [String] -> MVar [ [Char] ] -> ByteString -> Int -> IO ()
-takeTask taskQueue resultQueue hashFind workerNumber = do
+takeTask taskQueue resultList hashFind workerNumber = do
   maybeTask <- modifyMVar taskQueue
                  (\q -> return $ case q of
                                    [] -> ([], Nothing)
                                    xs -> (P.drop (125 * workerNumber) xs, Just (P.take (125 * workerNumber) xs)))   -- 4 ядра 500     8 ядер 1000
-                                   --xs -> (P.drop 2000 xs, Just (P.take 2000 xs)))
   case maybeTask of
     Nothing -> return ()
     Just task -> do
       let rslt = bruteForce hashFind task
-      rslt `deepseq` modifyMVar_ resultQueue (\q -> return (rslt:q))
-      takeTask taskQueue resultQueue hashFind workerNumber
+      rslt `deepseq` modifyMVar_ resultList (\q -> return (rslt:q))
+      takeTask taskQueue resultList hashFind workerNumber
 
 mainLoop :: MVar [ [Char] ] -> Int -> IO ()
-mainLoop resultQueue taskNumber = do
-  results <- modifyMVar resultQueue (\q -> return ([], q))
+mainLoop resultList taskNumber = do
+  results <- modifyMVar resultList (\q -> return ([], q))
   let rslt = P.filter (\x -> x /= "") results
   case rslt of
     [] -> do
       threadDelay 100000 -- 100 ms
-      mainLoop resultQueue (taskNumber - P.length results)
+      mainLoop resultList (taskNumber - P.length results)
     _ -> do
       P.putStrLn "Your password is:"
       P.putStrLn $ P.head rslt
@@ -52,14 +51,15 @@ main = do
          let x = "aae5bdb0faced2bddf2f7d805aeee05ebf633c04"
          let taskNumber = (P.length pull) ^ 5    -- общее кол-во вариантов пароля
          let hashFind = BSC.pack x
+         --let res = bruteForce (BSC.pack x) allPasses
          --P.putStrLn (show res)
          workerNumber <- getNumCapabilities
          taskQueue <- newMVar allPasses
-         resultQueue <- newMVar []
+         resultList <- newMVar []
          P.putStrLn $ "Processor cores: " ++ show workerNumber
          P.putStrLn "Searching password..."
-         workerNumber `replicateM_` forkIO (takeTask taskQueue resultQueue hashFind workerNumber)
-         mainLoop resultQueue taskNumber
+         replicateM_ workerNumber forkIO (takeTask taskQueue resultList hashFind workerNumber)
+         mainLoop resultList taskNumber
          return()
         
 
@@ -70,8 +70,8 @@ letters = "abcdefghijklmnopqrstuvwxyz"
 charsToStrings :: [Char] -> [String]
 charsToStrings [x] = [[x]]
 charsToStrings (x:xs) = [[x]] ++ (charsToStrings xs)
-
-
+giveHash :: String -> ByteString
+giveHash x = encode $ SHA1.hash (BSC.pack x)
 
 
 --encode $ SHA1.hash (BSC.pack "1111")   
