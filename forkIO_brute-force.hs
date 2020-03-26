@@ -48,7 +48,7 @@ mainLoop resultList taskNumber = do
 main :: IO()
 main = do
          --x <- P.getLine
-         let x = "aae5bdb0faced2bddf2f7d805aeee05ebf633c04"
+         let x = "7b21848ac9af35be0ddb2d6b9fc3851934db8420"
          let taskNumber = (P.length pull) ^ 5    -- общее кол-во вариантов пароля
          let hashFind = BSC.pack x
          --let res = bruteForce (BSC.pack x) allPasses
@@ -58,7 +58,7 @@ main = do
          resultList <- newMVar []
          P.putStrLn $ "Processor cores: " ++ show workerNumber
          P.putStrLn "Searching password..."
-         replicateM_ workerNumber forkIO (takeTask taskQueue resultList hashFind workerNumber)
+         workerNumber `replicateM_` forkIO (takeTask taskQueue resultList hashFind workerNumber)
          mainLoop resultList taskNumber
          return()
         
