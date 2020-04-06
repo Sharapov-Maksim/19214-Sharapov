@@ -36,8 +36,8 @@ takeTask taskQueue resultContainer hashFind workerNumber = do
 
 main :: IO()
 main = do
-         --x <- P.getLine
-         let x = "f888fa8a61ba9a53a45f040a4bbb8b2fc1f64444"
+         x <- P.getLine
+         --let x = "aae5bdb0faced2bddf2f7d805aeee05ebf633c04"    - такое задание пароля нужно для тестов
          let taskNumber = (P.length pull) ^ 5    -- общее кол-во вариантов пароля
          let hashFind = BSC.pack x
          workerNumber <- getNumCapabilities
@@ -62,11 +62,6 @@ giveHash :: String -> ByteString
 giveHash x = encode $ SHA1.hash (BSC.pack x)
 
 
---encode $ SHA1.hash (BSC.pack "1111")   
---da39a3ee5e6b4b0d3255bfef95601890afd80709        - ""
---17ba0791499db908433b80f37c5fbc89b870084b        - "11"
---6216f8a75fd5bb3d5f22b6f9958cdede3fc086c2        - "111"
---011c945f30ce2cbafc452f39840f025693339c42        - "1111"
 --7b21848ac9af35be0ddb2d6b9fc3851934db8420        - "11111"      //  Total   time   35.922s  (  9.495s elapsed) - 4 ядра
---f888fa8a61ba9a53a45f040a4bbb8b2fc1f64444        - "ZZZZZ"      // Total   time  1219.672s  (324.559s elapsed) - 4 ядра
-                                                           
+--f888fa8a61ba9a53a45f040a4bbb8b2fc1f64444        - "ZZZZZ"      // Total   time  2587.281s  (350.580s elapsed) - 8 ядер
+                                                                 -- Total   time  1219.672s  (324.559s elapsed) - 4 ядра
