@@ -7,7 +7,6 @@ import Control.Concurrent
 import Control.Monad
 
 
-
 bruteForce :: ByteString -> [[Char]] -> Maybe String
 bruteForce x [] = Nothing
 bruteForce x (word:ws)  | encode(SHA1.hash (BSC.pack word)) == x = Just word
@@ -38,6 +37,7 @@ main :: IO()
 main = do
          x <- P.getLine
          --let x = "aae5bdb0faced2bddf2f7d805aeee05ebf633c04"    - такое задание пароля нужно для тестов
+         let taskNumber = (P.length pull) ^ 5    -- общее кол-во вариантов пароля
          let hashFind = BSC.pack x
          workerNumber <- getNumCapabilities
          taskQueue <- newMVar allPasses
@@ -45,8 +45,8 @@ main = do
          P.putStrLn $ "Processor cores: " ++ show workerNumber
          P.putStrLn "Searching password..."
          replicateM_ workerNumber (forkIO (takeTask taskQueue resultContainer hashFind workerNumber))
-         out <- takeMVar resultContainer
-         P.putStrLn out
+         answer <- takeMVar resultContainer
+         P.putStrLn answer
          return()
    
 
@@ -57,10 +57,8 @@ letters = "abcdefghijklmnopqrstuvwxyz"
 charsToStrings :: [Char] -> [String]
 charsToStrings [x] = [[x]]
 charsToStrings (x:xs) = [[x]] ++ (charsToStrings xs)
-giveHash :: String -> ByteString
-giveHash x = encode $ SHA1.hash (BSC.pack x)
 
 
 --7b21848ac9af35be0ddb2d6b9fc3851934db8420        - "11111"      //  Total   time   35.922s  (  9.495s elapsed) - 4 ядра
 --f888fa8a61ba9a53a45f040a4bbb8b2fc1f64444        - "ZZZZZ"      // Total   time  2587.281s  (350.580s elapsed) - 8 ядер
-                                                                 -- Total   time  1219.672s  (324.559s elapsed) - 4 ядра
+                                                                 -- Total   time  1219.672s  (324.559s elapsed) - 4 ядраd
