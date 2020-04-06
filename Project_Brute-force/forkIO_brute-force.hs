@@ -37,7 +37,6 @@ main :: IO()
 main = do
          x <- P.getLine
          --let x = "aae5bdb0faced2bddf2f7d805aeee05ebf633c04"    - такое задание пароля нужно для тестов
-         let taskNumber = (P.length pull) ^ 5    -- общее кол-во вариантов пароля
          let hashFind = BSC.pack x
          workerNumber <- getNumCapabilities
          taskQueue <- newMVar allPasses
