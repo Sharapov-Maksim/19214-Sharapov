@@ -35,6 +35,7 @@ takeTask taskQueue resultContainer hashFind workerNumber = do
 
 main :: IO()
 main = do
+         P.putStrLn "Write your hash :"
          x <- P.getLine
          --let x = "aae5bdb0faced2bddf2f7d805aeee05ebf633c04"    - такое задание пароля нужно для тестов
          let hashFind = BSC.pack x
